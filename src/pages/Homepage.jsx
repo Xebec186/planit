@@ -2,12 +2,25 @@ import { IoMdAdd } from "react-icons/io";
 import calendarImg from "../assets/calendar.png";
 
 function Homepage() {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return "Good morning";
+    }
+
+    if (hour < 17) {
+      return "Good afternoon";
+    }
+
+    return "Good evening";
+  };
+
   return (
     <main className="min-h-screen px-6 py-8">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
           <p className="mb-1 font-semibold text-planit-text-muted">
-            Good evening,
+            {getGreeting()},
           </p>
           <h1 className="mb-3 text-4xl font-bold text-planit-heading">
             Let's plan something great!
