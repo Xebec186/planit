@@ -24,6 +24,7 @@ function AddEventPage() {
     const trimmedName = name.trim();
     if (!trimmedName) {
       toast.error("Please enter an event name.");
+      setName("");
       return;
     }
 
