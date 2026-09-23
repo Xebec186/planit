@@ -3,22 +3,42 @@ import { IoChevronForward } from "react-icons/io5";
 import EventListItem from "./EventListItem";
 
 function EventList({ events = [], showAll = true, max = 3 }) {
-  // TODO: Add sort by prop to sort by custom order in events page
   let displayedEvents = events;
 
   if (!showAll) {
-    displayedEvents = events
-      .toSorted((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
+    // set baseline to start of today (00:00:00) so today's events are part of upcoming events
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const todayTimestamp = now.getTime();
 
-        // Handle invalid dates safely (places invalid dates at the end)
-        if (isNaN(dateA)) return 1;
-        if (isNaN(dateB)) return -1;
+    const sortedEvents = [...events].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
 
-        return dateA - dateB;
-      })
-      .slice(0, max);
+      // Handle invalid dates safely (places invalid dates at the end)
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+
+      return dateA - dateB;
+    });
+
+    // filter for upcoming events
+    const upcomingEvents = sortedEvents.filter((event) => {
+      const eventDate = new Date(event.date).getTime();
+      return !isNaN(eventDate) && eventDate >= todayTimestamp;
+    });
+
+    displayedEvents = (
+      upcomingEvents.length > 0 ? upcomingEvents : sortedEvents
+    ).slice(0, max);
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="py-6 text-center text-sm text-planit-text-muted">
+        No events found.
+      </div>
+    );
   }
 
   return (
