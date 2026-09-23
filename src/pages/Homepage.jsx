@@ -74,8 +74,9 @@ function Homepage() {
                 alt="Calendar illustration"
                 className="w-full max-w-sm object-contain"
               />
-
-              <AddEventButton />
+              <div className="mt-8">
+                <AddEventButton />
+              </div>
             </div>
           </>
         )}
