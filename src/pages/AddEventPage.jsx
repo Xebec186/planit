@@ -1,4 +1,74 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { EVENTS_STORAGE_KEY } from "../utils/constants";
+import toast from "react-hot-toast";
+import { CgSpinner } from "react-icons/cg";
+
 function AddEventPage() {
+  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [budget, setBudget] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const resetForm = () => {
+    setName("");
+    setDate("");
+    setBudget("");
+  };
+
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      toast.error("Please enter an event name.");
+      return;
+    }
+
+    const event = {
+      id: crypto.randomUUID(),
+      name: trimmedName,
+      date: date,
+      createdAt: new Date().toISOString(),
+      budget: Number(budget) || 0,
+      spent: 0,
+
+      tasks: {
+        total: 0,
+        completed: 0,
+        items: [],
+      },
+
+      categories: [],
+
+      expenses: [],
+    };
+
+    const toastId = toast.loading("Creating event...");
+
+    try {
+      setLoading(true);
+
+      const rawEvents = localStorage.getItem(EVENTS_STORAGE_KEY);
+      const events = rawEvents ? JSON.parse(rawEvents) : [];
+
+      const updatedEvents = [...events, event];
+      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(updatedEvents));
+
+      resetForm();
+      toast.success("Created event successfully!", { id: toastId });
+      navigate(`/events/${event.id}`);
+    } catch (error) {
+      const errMessage =
+        error?.message || "An error occurred in creating event";
+      toast.error(errMessage, { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen px-6 py-8">
       <div className="mx-auto max-w-3xl">
@@ -12,7 +82,7 @@ function AddEventPage() {
           </p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="event-name"
@@ -24,8 +94,11 @@ function AddEventPage() {
             <input
               id="event-name"
               type="text"
-              placeholder="e.g. Birthday Party"
-              className="w-full rounded-lg border border-planit-border bg-planit-surface px-4 py-3 text-sm outline-none transition-colors placeholder:text-planit-text-muted focus:border-planit-primary"
+              value={name}
+              required
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Weekend Trip"
+              className="w-full rounded-lg border border-planit-border bg-planit-surface px-4 py-3 text-md outline-none transition-colors placeholder:text-planit-text-muted focus:border-planit-primary"
             />
           </div>
 
@@ -40,7 +113,10 @@ function AddEventPage() {
             <input
               id="event-date"
               type="date"
-              className="w-full rounded-lg border border-planit-border bg-planit-surface px-4 py-3 text-sm outline-none transition-colors focus:border-planit-primary"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full rounded-lg border border-planit-border bg-planit-surface px-4 py-3 text-md outline-none transition-colors focus:border-planit-primary"
             />
           </div>
 
@@ -60,9 +136,11 @@ function AddEventPage() {
               <input
                 id="event-budget"
                 type="number"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
                 min="0"
                 placeholder="800"
-                className="w-full rounded-lg border border-planit-border bg-planit-surface py-3 pl-14 pr-4 text-sm outline-none transition-colors placeholder:text-planit-text-muted focus:border-planit-primary"
+                className="w-full rounded-lg border border-planit-border bg-planit-surface py-3 pl-14 pr-4 text-md outline-none transition-colors placeholder:text-planit-text-muted focus:border-planit-primary"
               />
             </div>
           </div>
@@ -70,6 +148,7 @@ function AddEventPage() {
           <div className="flex items-center justify-end gap-3 border-t border-planit-border pt-6">
             <button
               type="button"
+              onClick={() => navigate(-1)}
               className="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-semibold text-planit-text-muted transition-colors hover:bg-planit-gray"
             >
               Cancel
@@ -77,9 +156,11 @@ function AddEventPage() {
 
             <button
               type="submit"
-              className="cursor-pointer rounded-lg bg-planit-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-planit-primary-dark"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 rounded-lg bg-planit-primary px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-planit-primary-dark disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-planit-primary"
             >
-              Create Event
+              {loading && <CgSpinner size={18} className="animate-spin" />}
+              <span>{loading ? "Creating..." : "Create Event"}</span>
             </button>
           </div>
         </form>
