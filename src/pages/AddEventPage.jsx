@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { EVENTS_STORAGE_KEY } from "../utils/constants";
 import toast from "react-hot-toast";
 import { CgSpinner } from "react-icons/cg";
+import DateInput from "../components/DateInput";
 
 function AddEventPage() {
   const [name, setName] = useState("");
@@ -103,23 +104,7 @@ function AddEventPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="event-date"
-              className="mb-2 block text-sm font-semibold text-planit-heading"
-            >
-              Event date
-            </label>
-
-            <input
-              id="event-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="w-full rounded-lg border border-planit-border bg-planit-surface px-4 py-3 text-md outline-none transition-colors focus:border-planit-primary"
-            />
-          </div>
+          <DateInput value={date} onChange={setDate} />
 
           <div>
             <label
