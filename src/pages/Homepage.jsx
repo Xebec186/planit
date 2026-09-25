@@ -1,20 +1,35 @@
+import { useState } from "react";
 import calendarImg from "../assets/calendar.png";
 import AddEventButton from "../components/AddEventButton";
 import EventList from "../components/EventList";
-import events from "../data/events";
+import { EVENTS_STORAGE_KEY } from "../utils/constants";
+import HomeHeader from "../components/HomeHeader";
+import ErrorBanner from "../components/ErrorBanner";
 
-function Homepage() {
+function HomePage() {
+  const [eventsState] = useState(() => {
+    try {
+      const rawEvents = localStorage.getItem(EVENTS_STORAGE_KEY);
+      return {
+        data: rawEvents ? JSON.parse(rawEvents) : [],
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: [],
+        error:
+          error?.message ||
+          "An error occurred in loading events. Please try again.",
+      };
+    }
+  });
+
+  const { data: events, error } = eventsState;
+
   const getGreeting = () => {
     const hour = new Date().getHours();
-
-    if (hour < 12) {
-      return "Good morning";
-    }
-
-    if (hour < 17) {
-      return "Good afternoon";
-    }
-
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
     return "Good evening";
   };
 
@@ -23,28 +38,20 @@ function Homepage() {
   return (
     <main className="min-h-screen p-4 md:px-6 md:py-8">
       <div className="mx-auto max-w-5xl">
-        {hasEvents ? (
+        {error ? (
           <>
             {/* Page header */}
-            <header className="mb-8">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="mb-1 font-semibold text-planit-text-muted">
-                    {getGreeting()},
-                  </p>
+            <HomeHeader />
 
-                  <h1 className="text-3xl font-bold tracking-tight text-planit-heading md:text-4xl">
-                    Here's what's coming up.
-                  </h1>
-
-                  <p className="mt-2 max-w-xl leading-6 text-planit-text-muted">
-                    Your next events, planning progress, and budget at a glance.
-                  </p>
-                </div>
-
-                <AddEventButton />
-              </div>
-            </header>
+            {/* Error */}
+            <div className="mt-6">
+              <ErrorBanner error={error} />
+            </div>
+          </>
+        ) : hasEvents ? (
+          <>
+            {/* Page header */}
+            <HomeHeader />
 
             {/* Upcoming events */}
             <EventList events={events} showAll={false} />
@@ -85,4 +92,4 @@ function Homepage() {
   );
 }
 
-export default Homepage;
+export default HomePage;

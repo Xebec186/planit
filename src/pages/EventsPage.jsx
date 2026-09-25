@@ -4,9 +4,29 @@ import { LuArrowDown, LuArrowUp } from "react-icons/lu";
 import AddEventButton from "../components/AddEventButton";
 import EventList from "../components/EventList";
 import SearchBar from "../components/SearchBar";
-import events from "../data/events";
+import { EVENTS_STORAGE_KEY } from "../utils/constants";
+import ErrorBanner from "../components/ErrorBanner";
 
 function EventsPage() {
+  const [eventsState] = useState(() => {
+    try {
+      const rawEvents = localStorage.getItem(EVENTS_STORAGE_KEY);
+      return {
+        data: rawEvents ? JSON.parse(rawEvents) : [],
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: [],
+        error:
+          error?.message ||
+          "An error occurred in loading events. Please try again.",
+      };
+    }
+  });
+
+  const { data: events, error } = eventsState;
+
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -72,7 +92,7 @@ function EventsPage() {
 
       return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [query, filter, sortBy, sortDirection]);
+  }, [query, filter, sortBy, sortDirection, events]);
 
   const toggleSortDirection = () => {
     setSortDirection((currentDirection) =>
@@ -178,7 +198,11 @@ function EventsPage() {
         </div>
 
         <div className="mt-4">
-          <EventList events={displayedEvents} />
+          {error ? (
+            <ErrorBanner error={error} />
+          ) : (
+            <EventList events={displayedEvents} />
+          )}
         </div>
       </div>
     </main>
