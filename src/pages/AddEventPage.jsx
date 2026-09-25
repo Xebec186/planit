@@ -30,7 +30,7 @@ function AddEventPage() {
     }
 
     const event = {
-      id: crypto.randomUUID(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       name: trimmedName,
       date: date,
       createdAt: new Date().toISOString(),
